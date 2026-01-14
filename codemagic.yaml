@@ -3,8 +3,6 @@ workflows:
     name: iOS Release
     max_build_duration: 120
     instance_type: mac_mini_m1
-    # integrations:
-    #   app_store_connect: codemagic
     environment:
       ios_signing:
         distribution_type: app_store
@@ -12,7 +10,7 @@ workflows:
       vars:
         APP_STORE_CONNECT_ISSUER_ID: 52b58036-6b26-46ec-8482-9319fd1a2f1c
         APP_STORE_CONNECT_KEY_IDENTIFIER: 55U6KT9YG8
-        # APP_STORE_CONNECT_PRIVATE_KEY: Encrypted(...)
+        APP_STORE_CONNECT_PRIVATE_KEY: Encrypted(Z0FBQUFBQm5lV...)  # Replace with your encrypted key
       flutter: stable
       xcode: latest
       cocoapods: default
@@ -43,7 +41,9 @@ workflows:
           success: true
           failure: true
       app_store_connect:
-        auth: integration
+        api_key: $APP_STORE_CONNECT_PRIVATE_KEY
+        key_id: $APP_STORE_CONNECT_KEY_IDENTIFIER
+        issuer_id: $APP_STORE_CONNECT_ISSUER_ID
         submit_to_testflight: true
         beta_groups:
           - Internal Testers
