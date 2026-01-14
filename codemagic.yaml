@@ -9,7 +9,7 @@ workflows:
       flutter: stable
       xcode: latest
       cocoapods: default
-      scripts:
+    scripts:
       - name: Set up provisioning profiles
         script: |
           set -e
@@ -19,8 +19,7 @@ workflows:
           APP_STORE_CONNECT_PRIVATE_KEY=$APP_STORE_CONNECT_PRIVATE_KEY \
           app-store-connect fetch-signing-files co.codeminer.circMarketPlace \
             --type IOS_APP_STORE \
-            --create --verbose   # <-- Add --verbose for better logs on failure
-
+            --create --verbose   # <-- verbose for debugging; remove later if not needed
       - name: Set up keychain
         script: |
           keychain initialize
