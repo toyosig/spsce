@@ -4,11 +4,8 @@ workflows:
     max_build_duration: 120
     instance_type: mac_mini_m1
     environment:
-      ios_signing:
-        distribution_type: app_store
-        bundle_identifier: co.codeminer.circMarketPlace
       groups:
-        - app_store_credentials  # This will reference the credentials group
+        - app_store_credentials  # Contains APP_STORE_CONNECT_ISSUER_ID, APP_STORE_CONNECT_KEY_IDENTIFIER, APP_STORE_CONNECT_PRIVATE_KEY
       flutter: stable
       xcode: latest
       cocoapods: default
@@ -21,7 +18,7 @@ workflows:
           APP_STORE_CONNECT_KEY_IDENTIFIER=$APP_STORE_CONNECT_KEY_IDENTIFIER \
           APP_STORE_CONNECT_PRIVATE_KEY=$APP_STORE_CONNECT_PRIVATE_KEY \
           app-store-connect fetch-signing-files co.codeminer.circMarketPlace \
-            --type APP_STORE \
+            --type IOS_APP_STORE \
             --create
       - name: Set up keychain
         script: |
