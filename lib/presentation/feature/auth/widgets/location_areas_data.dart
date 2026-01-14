@@ -1,0 +1,52 @@
+// Comprehensive list of areas for Lagos and Abuja
+// Lagos areas are more granular than LGAs
+
+class LocationAreasData {
+  static const Map<String, List<String>> areas = {
+    'Lagos': [
+      'Agege',
+      'Ajah',
+      'Ajeromi-Ifelodun',
+      'Alimosho',
+      'Amuwo-Odofin',
+      'Apapa',
+      'Badagry',
+      'Epe',
+      'Eti-Osa (Lekki, Victoria Island, Ikoyi)',
+      'Ibeju-Lekki',
+      'Ifako-Ijaiye',
+      'Ikeja (Ikeja GRA, Maryland)',
+      'Ikorodu',
+      'Kosofe',
+      'Lagos Island',
+      'Lagos Mainland (Yaba, Ebute Metta)',
+      'Mushin',
+      'Ojo',
+      'Oshodi-Isolo',
+      'Shomolu',
+      'Surulere',
+      'Victoria Island (VI)',
+      'Yaba',
+    ],
+    'FCT - Abuja': [
+      'Abuja Municipal Area Council (AMAC)',
+      'Bwari',
+      'Gwagwalada',
+      'Kuje',
+      'Kwali',
+      'Abaji',
+      'Central Business District (CBD)',
+      'Garki',
+      'Guzape',
+      'Jabi',
+      'Maitama',
+      'Wuse',
+      'Asokoro',
+      'Kado',
+      'Katampe',
+      'Nyanya',
+      'Suleja',
+      'Zuba',
+    ],
+  };
+}

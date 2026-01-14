@@ -1,0 +1,98 @@
+{
+  "project_info": {
+    "project_number": "629769007375",
+    "project_id": "circ-marketplace",
+    "storage_bucket": "circ-marketplace.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:629769007375:android:af99d073dc320bad0c0e7a",
+        "android_client_info": {
+          "package_name": "co.codeminer.circ"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "629769007375-hpq11nr93j4qqnu7bg0u2cvrl3klsbb9.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB8VXgkSBKIEPmrFB_5HDa0ULquYLduD0Y"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "629769007375-hpq11nr93j4qqnu7bg0u2cvrl3klsbb9.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "629769007375-eok6r824931f3gskkpqcp9cu9cnkpo00.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "co.codeminer.circMarketPlace"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:629769007375:android:5b89ea7d9fa848e50c0e7a",
+        "android_client_info": {
+          "package_name": "co.codeminer.circMarket"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "629769007375-0llkdcln4ld45v5kg02lf5kc8mp5t5sl.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "co.codeminer.circMarket",
+            "certificate_hash": "4120feccc04022ab9a08c7c6d08485a9521f49ee"
+          }
+        },
+        {
+          "client_id": "629769007375-46gk7tpc374o3ov63m6h757aik8tdtqh.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "co.codeminer.circMarket",
+            "certificate_hash": "dca9fbd98476328242fa29a7a1c927ccfba59ef0"
+          }
+        },
+        {
+          "client_id": "629769007375-hpq11nr93j4qqnu7bg0u2cvrl3klsbb9.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB8VXgkSBKIEPmrFB_5HDa0ULquYLduD0Y"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "629769007375-hpq11nr93j4qqnu7bg0u2cvrl3klsbb9.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "629769007375-eok6r824931f3gskkpqcp9cu9cnkpo00.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "co.codeminer.circMarketPlace"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
