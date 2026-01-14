@@ -10,6 +10,14 @@ workflows:
       xcode: latest
       cocoapods: default
     scripts:
+      - name: Test App Store Connect Auth
+        script: |
+          set -e
+          set -x
+          APP_STORE_CONNECT_ISSUER_ID=$APP_STORE_CONNECT_ISSUER_ID \
+          APP_STORE_CONNECT_KEY_IDENTIFIER=$APP_STORE_CONNECT_KEY_IDENTIFIER \
+          APP_STORE_CONNECT_PRIVATE_KEY=$APP_STORE_CONNECT_PRIVATE_KEY \
+          app-store-connect get-apps --verbose
       - name: Set up provisioning profiles
         script: |
           set -e
@@ -19,7 +27,7 @@ workflows:
           APP_STORE_CONNECT_PRIVATE_KEY=$APP_STORE_CONNECT_PRIVATE_KEY \
           app-store-connect fetch-signing-files co.codeminer.circMarketPlace \
             --type IOS_APP_STORE \
-            --create --verbose   # <-- verbose for debugging; remove later if not needed
+            --create --verbose
       - name: Set up keychain
         script: |
           keychain initialize
