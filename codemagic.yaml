@@ -17,7 +17,7 @@ workflows:
           APP_STORE_CONNECT_ISSUER_ID=$APP_STORE_CONNECT_ISSUER_ID \
           APP_STORE_CONNECT_KEY_IDENTIFIER=$APP_STORE_CONNECT_KEY_IDENTIFIER \
           APP_STORE_CONNECT_PRIVATE_KEY=$APP_STORE_CONNECT_PRIVATE_KEY \
-          app-store-connect apps --verbose
+          app-store-connect certificates list --verbose
       - name: Set up provisioning profiles
         script: |
           set -e
