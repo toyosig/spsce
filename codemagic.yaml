@@ -5,16 +5,30 @@ workflows:
     instance_type: mac_mini_m1
     environment:
       ios_signing:
-        distribution_type: app_store_connect
+        distribution_type: app_store
         bundle_identifier: co.codeminer.circMarketPlace
-      vars:
-        APP_STORE_CONNECT_ISSUER_ID: 52b58036-6b26-46ec-8482-9319fd1a2f1c
-        APP_STORE_CONNECT_KEY_IDENTIFIER: 55U6KT9YG8
-        # APP_STORE_CONNECT_PRIVATE_KEY: Encrypted(Z0FBQUFBQm5lV...)  # Replace with your encrypted key
+      groups:
+        - app_store_credentials  # This will reference the credentials group
       flutter: stable
       xcode: latest
       cocoapods: default
     scripts:
+      - name: Set up provisioning profiles
+        script: |
+          set -e
+          set -x
+          APP_STORE_CONNECT_ISSUER_ID=$APP_STORE_CONNECT_ISSUER_ID \
+          APP_STORE_CONNECT_KEY_IDENTIFIER=$APP_STORE_CONNECT_KEY_IDENTIFIER \
+          APP_STORE_CONNECT_PRIVATE_KEY=$APP_STORE_CONNECT_PRIVATE_KEY \
+          app-store-connect fetch-signing-files co.codeminer.circMarketPlace \
+            --type APP_STORE \
+            --create
+      - name: Set up keychain
+        script: |
+          keychain initialize
+      - name: Add certificates to keychain
+        script: |
+          keychain add-certificates
       - name: Set up code signing settings on Xcode project
         script: |
           xcode-project use-profiles
