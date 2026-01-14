@@ -5,7 +5,7 @@ workflows:
     instance_type: mac_mini_m1
     environment:
       ios_signing:
-        distribution_type: app_store
+        distribution_type: app_store_connect
         bundle_identifier: co.codeminer.circMarketPlace
       vars:
         APP_STORE_CONNECT_ISSUER_ID: 52b58036-6b26-46ec-8482-9319fd1a2f1c
