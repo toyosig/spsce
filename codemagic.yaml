@@ -8,7 +8,7 @@ workflows:
     environment:
       ios_signing:
         distribution_type: app_store
-        bundle_identifier: co.codeminer.circMarketPlace
+        bundle_identifier: co.coderiner.circMarketPlace 
       vars:
         APP_STORE_CONNECT_ISSUER_ID: 52b58036-6b26-46ec-8482-9319fd1a2f1c
         APP_STORE_CONNECT_KEY_IDENTIFIER: 55U6KT9YG8
