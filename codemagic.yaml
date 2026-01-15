@@ -37,11 +37,11 @@ workflows:
       - name: Set up code signing settings on Xcode project
         script: |
           xcode-project use-profiles
-      - name: Create .env and assets  # <-- ADD THIS STEP
+      - name: Create .env and assets
         script: |
           set -e
           echo "Creating .env file..."
-          echo "API_BASE_URL=https://api.circmarketplace.com" > .env
+          touch .env
           echo "Creating mock assets directory..."
           mkdir -p assets/mock/
           echo "Setup complete!"
@@ -54,7 +54,8 @@ workflows:
       - name: Flutter build ipa
         script: |
           flutter build ipa --release \
-            --build-name=1.0.$BUILD_NUMBER \
+            --build-name=1.2.0 \
+            --build-number=$BUILD_NUMBER \
             --export-options-plist=/Users/builder/export_options.plist
     artifacts:
       - build/ios/ipa/*.ipa
