@@ -6,6 +6,7 @@ workflows:
     environment:
       groups:
         - app_store_credentials
+        - app_env_vars  # Add your .env variables to this group in Codemagic UI
       flutter: stable
       xcode: latest
       cocoapods: default
@@ -41,7 +42,23 @@ workflows:
         script: |
           set -e
           echo "Creating .env file..."
-          touch .env
+          cat > .env << EOF
+          DATABASE_URL=$DATABASE_URL
+          JWT_SECRET=$JWT_SECRET
+          API_BASE_URL=$API_BASE_URL
+          JWT_REFRESH_SECRET=$JWT_REFRESH_SECRET
+          PAYSTACK_SECRET_KEY=$PAYSTACK_SECRET_KEY
+          SSL_KEY_PATH=$SSL_KEY_PATH
+          SSL_CERT_PATH=$SSL_CERT_PATH
+          EMAIL_USER=$EMAIL_USER
+          EMAIL_PASSWORD=$EMAIL_PASSWORD
+          SMTP_HOST=$SMTP_HOST
+          SMTP_PORT=$SMTP_PORT
+          SMTP_SECURE=$SMTP_SECURE
+          FIREBASE_PROJECT_ID=$FIREBASE_PROJECT_ID
+          FIREBASE_CLIENT_EMAIL=$FIREBASE_CLIENT_EMAIL
+          FIREBASE_PRIVATE_KEY=$FIREBASE_PRIVATE_KEY
+          EOF
           echo "Creating mock assets directory..."
           mkdir -p assets/mock/
           echo "Setup complete!"
@@ -55,7 +72,7 @@ workflows:
         script: |
           flutter build ipa --release \
             --build-name=1.2.0 \
-            --build-number=22 \
+            --build-number=25 \
             --export-options-plist=/Users/builder/export_options.plist
     artifacts:
       - build/ios/ipa/*.ipa
