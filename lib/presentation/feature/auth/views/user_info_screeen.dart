@@ -24,6 +24,13 @@ class UserInfoScreeen extends StatefulWidget {
 
 class _UserInfoScreeenState extends State<UserInfoScreeen> {
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
+  final ScrollController _scrollController = ScrollController();
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -31,120 +38,135 @@ class _UserInfoScreeenState extends State<UserInfoScreeen> {
       builder: (context, viewModel, _) {
         return Scaffold(
           backgroundColor: AppColors.white,
-          body: SizedBox(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 16.0,
-                vertical: 16.0,
-              ),
-              child: Form(
-                key: formKey,
-                child: SingleChildScrollView(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    spacing: 20,
-                    children: [
-                      SizedBox(height: 5.h),
-                      // Back button
-                      Align(
-                        alignment: Alignment.topLeft,
-                        child: GestureDetector(
-                          onTap: () {
-                            context.pop();
-                          },
-                          child: Icon(
-                            Icons.arrow_back,
-                            color: AppColors.black,
-                            size: 24.sp,
+          body: SafeArea(
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                return SingleChildScrollView(
+                  controller: _scrollController,
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      minHeight: constraints.maxHeight,
+                    ),
+                    child: IntrinsicHeight(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16.0,
+                          vertical: 16.0,
+                        ),
+                        child: Form(
+                          key: formKey,
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            spacing: 20,
+                            children: [
+                              SizedBox(height: 5.h),
+                              // Back button
+                              Align(
+                                alignment: Alignment.topLeft,
+                                child: GestureDetector(
+                                  onTap: () {
+                                    context.pop();
+                                  },
+                                  child: Icon(
+                                    Icons.arrow_back,
+                                    color: AppColors.black,
+                                    size: 24.sp,
+                                  ),
+                                ),
+                              ),
+                              SizedBox(height: 10.h),
+
+                              Image.asset(
+                                AppImages.circfilledlogo,
+                                height: 50.h,
+                                width: 100.w,
+                              ),
+                              Text(
+                                'Almost Done',
+                                style: AppTextStyles.neueMontreal(
+                                  fontSize: 24.sp,
+                                  color: AppColors.black,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                              Text(
+                                'Enter your details below to create your account',
+                                style: AppTextStyles.neueMontreal(
+                                  fontSize: 15.sp,
+                                  color: AppColors.greyText,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                              NigeriaStateDropdown(
+                                title: 'Location (Select Lagos or Abuja)',
+                                selectedState: viewModel.state,
+                                onChanged: (state) {
+                                  if (state != null) {
+                                    viewModel.setCurrentState(state);
+                                  }
+                                },
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return 'State is required';
+                                  }
+                                  return null;
+                                },
+                              ),
+// City dropdown - only show if state is selected
+                              if (viewModel.state.isNotEmpty)
+                                CustomDropdown(
+                                  title: 'Select Area',
+                                  width: double.infinity,
+                                  height: 55.h,
+                                  items: LocationAreasData.areas[viewModel.state] ?? [],
+                                  selectedValue: viewModel.area,
+                                  onChanged: (value) {
+                                    viewModel.setCurrentArea(value);
+                                  },
+                                  validator: (value) {
+                                    if (value == null || value.isEmpty) {
+                                      return 'Area is required';
+                                    }
+                                    return null;
+                                  },
+                                ),
+                              Text('Please Select Gender (Optional)'),
+                              CustomDropdown(
+                                width: double.infinity,
+                                height: 55.h,
+                                items: ['Male', 'Female', 'Other'],
+                                selectedValue: viewModel.selectedGender,
+                                onChanged: (value) {
+                                  viewModel.setGender(value);
+                                },
+                              ),
+
+                              CustomAppButtons.primaryButton(
+                                width: double.infinity,
+                                height: 50.h,
+                                text: 'Continue',
+                                onTap: () {
+                                  if (formKey.currentState!.validate() && viewModel.area.isNotEmpty) { 
+                                    viewModel.register(context);
+                                  } else {
+                                    MessageHelper.showErrorMessage(
+                                      context,
+                                      'Please fill in all required fields',
+                                    );
+                                  }
+                                },
+                              ),
+                              SizedBox(height: 50.h), // Extra bottom padding
+                            ],
                           ),
                         ),
                       ),
-                      SizedBox(height: 10.h),
-
-                      Image.asset(
-                        AppImages.circfilledlogo,
-                        height: 50.h,
-                        width: 100.w,
-                      ),
-                      Text(
-                        'Almost Done',
-                        style: AppTextStyles.neueMontreal(
-                          fontSize: 24.sp,
-                          color: AppColors.black,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      Text(
-                        'Enter your details below to create your account',
-                        style: AppTextStyles.neueMontreal(
-                          fontSize: 15.sp,
-                          color: AppColors.greyText,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      NigeriaStateDropdown(
-                        title: 'Location (Select Lagos or Abuja)',
-                        selectedState: viewModel.state,
-                        onChanged: (state) {
-                          if (state != null) {
-                            viewModel.setCurrentState(state);
-                          }
-                        },
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'State is required';
-                          }
-                          return null;
-                        },
-                      ),
-// City dropdown - only show if state is selected
-                      if (viewModel.state.isNotEmpty)
-                        CustomDropdown(
-                          title: 'Select Area',
-                          width: double.infinity,
-                          height: 55.h,
-                          items: LocationAreasData.areas[viewModel.state] ?? [],
-                          selectedValue: viewModel.area,
-                          onChanged: (value) {
-                            viewModel.setCurrentArea(value);
-                          },
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Area is required';
-                            }
-                            return null;
-                          },
-                        ),
-                      Text('Please Select Gender (Optional)'),
-                      CustomDropdown(
-                        width: double.infinity,
-                        height: 55.h,
-                        items: ['Male', 'Female', 'Other'],
-                        selectedValue: viewModel.selectedGender,
-                        onChanged: (value) {
-                          viewModel.setGender(value);
-                        },
-                      ),
-
-                      CustomAppButtons.primaryButton(
-                        width: double.infinity,
-                        height: 50.h,
-                        text: 'Continue',
-                        onTap: () {
-                          if (formKey.currentState!.validate() && viewModel.area.isNotEmpty) { viewModel.register(context);
-                          } else {
-                            MessageHelper.showErrorMessage(
-                              context,
-                              'Please fill in all required fields',
-                            );
-                          }
-                        },
-                      ),
-                    ],
+                    ),
                   ),
-                ),
-              ),
+                );
+              },
             ),
           ),
         );

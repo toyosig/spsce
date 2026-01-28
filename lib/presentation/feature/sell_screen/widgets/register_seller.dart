@@ -11,7 +11,6 @@ import 'package:circ/utils/validators/form_validators.dart';
 import 'package:circ/presentation/feature/sell_screen/widgets/payment_verification_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-// import 'package:circ/utils/constants/location_areas_data.dart'; // ADDED IMPORT
 import 'package:circ/presentation/feature/auth/widgets/location_areas_data.dart';
 
 
@@ -37,14 +36,28 @@ class _SellerRegisterationState extends State<SellerRegisteration> {
     final sellVm = getIt.get<SellViewModel>();
 
     final formKey = GlobalKey<FormState>();
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: Column(
-        children: [
-          CustomPrimaryAppBar(
-            isBackButtonVisible: true, // FIXED: Changed from false to true
-            title: 'Seller Registration',
-          ),
+    return WillPopScope(
+      onWillPop: () async {
+        // Allow back navigation
+        return true;
+      },
+      child: Scaffold(
+        backgroundColor: Colors.white,
+        body: Column(
+          children: [
+            CustomPrimaryAppBar(
+              isBackButtonVisible: true,
+              title: 'Seller Registration',
+              onTap: () {
+                // Safe navigation - check if we can pop
+                if (Navigator.of(context).canPop()) {
+                  Navigator.of(context).pop();
+                } else {
+                  // If can't pop with Navigator, try maybePop which won't crash
+                  Navigator.of(context).maybePop();
+                }
+              },
+            ),
           Expanded(
             child: Container(
               padding: EdgeInsets.symmetric(horizontal: 20.h),
@@ -342,6 +355,7 @@ class _SellerRegisterationState extends State<SellerRegisteration> {
           ),
         ],
       ),
+    ),
     );
   }
 

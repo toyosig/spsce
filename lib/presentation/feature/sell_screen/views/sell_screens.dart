@@ -79,16 +79,22 @@ class _SellScreenState extends State<SellScreen> {
   Widget build(BuildContext context) {   
     return Consumer<ProfileViewModel>(
       builder: (context, profileVm, _) {
-        return Scaffold(
-          backgroundColor: Colors.white,
-          body: isFirstSale
-              ? FirstSaleScreen()
-              : profileVm.user?.seller == null
-              ? const SellerRegisteration()
-              : SellFormContent(
-                  isEdit: widget.isEdit ?? false,
-                  product: widget.product,
-                ),
+        return WillPopScope(
+          onWillPop: () async {
+            // Allow back navigation
+            return true;
+          },
+          child: Scaffold(
+            backgroundColor: Colors.white,
+            body: isFirstSale
+                ? FirstSaleScreen()
+                : profileVm.user?.seller == null
+                ? const SellerRegisteration()
+                : SellFormContent(
+                    isEdit: widget.isEdit ?? false,
+                    product: widget.product,
+                  ),
+          ),
         );
       },
     );
@@ -108,7 +114,16 @@ class SellFormContent extends StatelessWidget {
         CustomPrimaryAppBar(
           title: isEdit ? 'Edit item' : 'Sell an item',
           showTrailing: false,
-          isBackButtonVisible: isEdit,
+          isBackButtonVisible: true,
+          onTap: () {
+            // Safe navigation - check if we can pop
+            if (Navigator.of(context).canPop()) {
+              Navigator.of(context).pop();
+            } else {
+              // If can't pop with Navigator, try maybePop which won't crash
+              Navigator.of(context).maybePop();
+            }
+          },
         ),
         Expanded(
           child: Container(

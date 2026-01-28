@@ -23,7 +23,7 @@ class CustomDropdown extends StatefulWidget {
     this.openAbove = false,
     this.width,
     this.height,
-    this.title, // <-- ADD THIS LINE
+    this.title,
   });
 
   @override
@@ -59,11 +59,23 @@ class _CustomDropdownState extends State<CustomDropdown> {
     final renderBox = context.findRenderObject() as RenderBox;
     final size = renderBox.size;
     final offset = renderBox.localToGlobal(Offset.zero);
-    final dropdownHeight = widget.items.length * 45.0 + 8;
-
-    final positionY = widget.openAbove
-        ? offset.dy - dropdownHeight
-        : offset.dy + size.height;
+    
+    // Calculate available space
+    final screenHeight = MediaQuery.of(context).size.height;
+    final spaceBelow = screenHeight - offset.dy - size.height;
+    final spaceAbove = offset.dy;
+    
+    // Maximum height for dropdown (limit to 200.h or available space)
+    final maxDropdownHeight = 200.0.h;
+    final itemHeight = 45.0;
+    final calculatedHeight = (widget.items.length * itemHeight + 8).clamp(0.0, maxDropdownHeight);
+    
+    // Determine if dropdown should open above or below
+    final shouldOpenAbove = widget.openAbove || (spaceBelow < calculatedHeight && spaceAbove > spaceBelow);
+    
+    final positionY = shouldOpenAbove
+        ? offset.dy - calculatedHeight - 8
+        : offset.dy + size.height + 8;
 
     return OverlayEntry(
       builder: (context) {
@@ -82,33 +94,38 @@ class _CustomDropdownState extends State<CustomDropdown> {
               child: CompositedTransformFollower(
                 link: _layerLink,
                 showWhenUnlinked: false,
-                offset: Offset(0, 47.h),
+                offset: Offset.zero,
                 child: Material(
                   elevation: 4,
                   color: AppColors.white,
                   borderRadius: BorderRadius.circular(8),
-                  child: ListView(
-                    padding: EdgeInsets.zero,
-                    shrinkWrap: true,
-                    children: widget.items.map((item) {
-                      return ListTile(
-                        dense: true,
-                        title: Text(
-                          item,
-                          style: AppTextStyles.neueMontreal(
-                            color: Colors.black,
-                            fontSize: 15.sp,
-                            fontWeight: FontWeight.w500,
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      maxHeight: calculatedHeight,
+                    ),
+                    child: ListView(
+                      padding: EdgeInsets.zero,
+                      shrinkWrap: true,
+                      children: widget.items.map((item) {
+                        return ListTile(
+                          dense: true,
+                          title: Text(
+                            item,
+                            style: AppTextStyles.neueMontreal(
+                              color: Colors.black,
+                              fontSize: 15.sp,
+                              fontWeight: FontWeight.w500,
+                            ),
                           ),
-                        ),
-                        onTap: () {
-                          setState(() => _selected = item);
-                          widget.onChanged(item);
-                          field.didChange(item);
-                          _removeDropdown();
-                        },
-                      );
-                    }).toList(),
+                          onTap: () {
+                            setState(() => _selected = item);
+                            widget.onChanged(item);
+                            field.didChange(item);
+                            _removeDropdown();
+                          },
+                        );
+                      }).toList(),
+                    ),
                   ),
                 ),
               ),
@@ -131,22 +148,50 @@ class _CustomDropdownState extends State<CustomDropdown> {
       initialValue: widget.selectedValue,
       validator: widget.validator,
       builder: (field) {
-        return CompositedTransformTarget(
-          link: _layerLink,
-          child: CustomAppButtons.trailingIconButton(
-            text: _selected ?? widget.title ?? 'Select', // <-- TO THIS
-            onTap: () => _toggleDropdown(field),
-            icon: Icons.arrow_forward_ios,
-            iconColor: AppColors.primaryBlack,
-            width: 165.5.w,
-            height: 47.h,
-            backgroundColor: AppColors.white,
-            textColor: AppColors.primaryBlack,
-            borderRadius: 8.r,
-            fontSize: 15.sp,
-            fontWeight: FontWeight.w500,
-            bordercolor: Colors.grey.shade400,
-          ),
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (widget.title != null)
+              Padding(
+                padding: EdgeInsets.only(bottom: 8.h),
+                child: Text(
+                  widget.title!,
+                  style: AppTextStyles.neueMontreal(
+                    fontSize: 15.sp,
+                    color: AppColors.black,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+            CompositedTransformTarget(
+              link: _layerLink,
+              child: CustomAppButtons.trailingIconButton(
+                text: _selected ?? 'Select',
+                onTap: () => _toggleDropdown(field),
+                icon: Icons.arrow_forward_ios,
+                iconColor: AppColors.primaryBlack,
+                width: widget.width ?? 165.5.w,
+                height: widget.height ?? 47.h,
+                backgroundColor: AppColors.white,
+                textColor: AppColors.primaryBlack,
+                borderRadius: 8.r,
+                fontSize: 15.sp,
+                fontWeight: FontWeight.w500,
+                bordercolor: Colors.grey.shade400,
+              ),
+            ),
+            if (field.hasError)
+              Padding(
+                padding: EdgeInsets.only(top: 4.h, left: 12.w),
+                child: Text(
+                  field.errorText ?? '',
+                  style: TextStyle(
+                    color: Colors.red,
+                    fontSize: 12.sp,
+                  ),
+                ),
+              ),
+          ],
         );
       },
     );
