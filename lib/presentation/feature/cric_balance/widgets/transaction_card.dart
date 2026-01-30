@@ -39,61 +39,6 @@ class TransactionTable extends StatelessWidget {
           children: [
             const TransactionsFilter(),
             const _TransactionHistoryTitle(),
-            // SizedBox(
-            //   width: double.infinity,
-            //   child: SingleChildScrollView(
-            //     scrollDirection: Axis.horizontal,
-            //     child: DataTable(
-            //       border: TableBorder.all(color: Colors.grey.shade300),
-            //       headingRowColor: WidgetStateProperty.all(AppColors.greyshade),
-            //       columns: [
-            //         _buildColumn('Date'),
-            //         _buildColumn('Type'),
-            //         _buildColumn('Amount'),
-            //         _buildColumn('Status'),
-            //       ],
-            //       rows: transactions.map((txn) {
-            //         final statusColor = _getStatusColor(txn.status);
-            //         final priceColor = _getPriceColor(
-            //           txn.amount,
-            //           txn.status,
-            //           txn.type,
-            //         );
-            //
-            //         return DataRow(
-            //           cells: [
-            //             _buildCell(
-            //               DateFormat.yMMMd().format(
-            //                 txn.createdAt ?? DateTime.now(),
-            //               ),
-            //             ),
-            //             _buildCell(txn.type ?? ""),
-            //             DataCell(
-            //               Text(
-            //                 _formatAmount(txn.amount ?? 0, txn.type),
-            //                 style: AppTextStyles.neueMontreal(
-            //                   color: priceColor,
-            //                   fontSize: 13.sp,
-            //                   fontWeight: FontWeight.w500,
-            //                 ),
-            //               ),
-            //             ),
-            //             DataCell(
-            //               Text(
-            //                 _status(txn.status ?? ""),
-            //                 style: AppTextStyles.neueMontreal(
-            //                   color: statusColor,
-            //                   fontSize: 13.sp,
-            //                   fontWeight: FontWeight.w500,
-            //                 ),
-            //               ),
-            //             ),
-            //           ],
-            //         );
-            //       }).toList(),
-            //     ),
-            //   ),
-            // ),
             if (viewModel.isLoading && transactions.isEmpty)
               const Center(child: CircularProgressIndicator())
             else if (transactions.isEmpty)
@@ -244,7 +189,9 @@ class TransactionTable extends StatelessWidget {
 
   Color _getStatusColor(String? status) {
     final lowerStatus = status?.toLowerCase() ?? '';
-    if (lowerStatus == 'completed') return Colors.green;
+    if (lowerStatus == 'completed' || lowerStatus == 'success' || lowerStatus == 'confirmed' || lowerStatus == 'paid') {
+      return Colors.green;
+    }
     if (lowerStatus == 'pending') return Color(0xFFAA5D00);
     if (lowerStatus == 'failed' || lowerStatus == 'cancelled') {
       return Colors.red;
@@ -254,77 +201,59 @@ class TransactionTable extends StatelessWidget {
 
   Color _getPriceColor(int? price, String? status, String? type) {
     final lowerStatus = status?.toLowerCase() ?? '';
+    final upperType = type?.toUpperCase() ?? '';
+    
     if (price == null) return AppColors.black;
-    if (price < 0) return Colors.red; // Red if price starts with "-"
+    if (price < 0) return Colors.red;
+    
     if (lowerStatus == 'failed' || lowerStatus == 'cancelled') {
       return Colors.red;
     }
     if (lowerStatus == 'pending') return AppColors.black;
-    if (type == "PURCHASE" || type == "MARKETPLACE_FEE") return Colors.red;
+    
+    if (upperType == "PURCHASE" || upperType == "WITHDRAWAL") return Colors.red;
+    
     return Colors.green;
   }
 
   String _formatAmount(int amount, String? type) {
-    final lowerStatus = type?.toLowerCase() ?? '';
-    if (lowerStatus == 'sold') {
+    final upperType = type?.toUpperCase() ?? '';
+    
+    if (upperType == 'SOLD') {
       return '+${Formators.formatCurrency(amount)}';
-    } else if (lowerStatus == 'purchase' ||
-        type == 'PURCHASE' ||
-        lowerStatus == 'marketplace_fee' ||
-        type == 'MARKETPLACE_FEE' ||
-        lowerStatus == 'withdrawal' ||
-        type == 'WITHDRAWAL') {
+    } else if (upperType == 'PURCHASE' || upperType == 'WITHDRAWAL') {
       return '-${Formators.formatCurrency(amount)}';
     } else {
       return Formators.formatCurrency(amount);
     }
   }
 
-  // String _status(String status) {
-  //   final upperStatus = status?.toUpperCase() ?? '';
-  //
-  //   switch (upperStatus) {
-  //     case 'COMPLETED':
-  //       return 'PAYMENT COMPLETED';
-  //     case 'SUCCESS':
-  //       return 'PAYMENT SUCCESSFUL';
-  //     case 'PAID':
-  //       return 'PAID';
-  //     case 'FAILED':
-  //       return 'PAYMENT FAILED';
-  //     case 'CANCELLED':
-  //       return 'ORDER CANCELLED';
-  //     case 'PENDING':
-  //       return 'PAYMENT PENDING';
-  //     default:
-  //       return status;
-  //   }
-  // }
-  // String _status(String status) {
-  //   final upperStatus = status.toUpperCase();
-  //   switch (upperStatus) {
-  //     case 'COMPLETED':
-  //     case 'SUCCESS':
-  //     case 'PAID':
-  //     case 'SOLD': // <-- ADDED THIS FOR SOLD ITEMS
-  //       return 'PAYMENT SUCCESSFUL';
-  //     case 'FAILED':
-  //       return 'PAYMENT FAILED';
-  //     case 'CANCELLED':
-  //       return 'ORDER CANCELLED';
-  //     case 'PENDING':
-  //       return 'PAYMENT PENDING';
-  //     default:
-  //       return status;
-  //   }
-  // }
   String _status(String status, String? type) {
     final upperStatus = status.toUpperCase();
     final upperType = type?.toUpperCase() ?? '';
 
-    // For SOLD transactions, check the actual status
+    // For PURCHASE transactions, show appropriate status
+    if (upperType == 'PURCHASE') {
+      if (upperStatus == 'COMPLETED' || 
+          upperStatus == 'SUCCESS' || 
+          upperStatus == 'CONFIRMED' ||
+          upperStatus == 'PAID') {
+        return 'PAYMENT SUCCESSFUL';
+      } else if (upperStatus == 'PENDING') {
+        return 'PAYMENT PENDING';
+      } else if (upperStatus == 'FAILED') {
+        return 'PAYMENT FAILED';
+      } else if (upperStatus == 'CANCELLED') {
+        return 'ORDER CANCELLED';
+      }
+    }
+
+    // For SOLD transactions, show appropriate status
     if (upperType == 'SOLD') {
-      if (upperStatus == 'COMPLETED' || upperStatus == 'SUCCESS') {
+      if (upperStatus == 'COMPLETED' || 
+          upperStatus == 'SUCCESS' || 
+          upperStatus == 'CONFIRMED' ||
+          upperStatus == 'PAID') {
         return 'PAYMENT SUCCESSFUL';
       } else if (upperStatus == 'PENDING') {
         return 'PAYMENT PENDING';
@@ -333,9 +262,22 @@ class TransactionTable extends StatelessWidget {
       }
     }
 
+    // For WITHDRAWAL transactions
+    if (upperType == 'WITHDRAWAL') {
+      if (upperStatus == 'COMPLETED' || upperStatus == 'SUCCESS' || upperStatus == 'CONFIRMED') {
+        return 'WITHDRAWAL SUCCESSFUL';
+      } else if (upperStatus == 'PENDING') {
+        return 'WITHDRAWAL PENDING';
+      } else if (upperStatus == 'FAILED') {
+        return 'WITHDRAWAL FAILED';
+      }
+    }
+
+    // Default status mapping
     switch (upperStatus) {
       case 'COMPLETED':
       case 'SUCCESS':
+      case 'CONFIRMED':
       case 'PAID':
         return 'PAYMENT SUCCESSFUL';
       case 'FAILED':

@@ -93,9 +93,9 @@ class FormValidators {
     }
 
     // City names typically consist of letters and may include spaces or hyphens
-    if (!RegExp(r'^[a-zA-Z\s\-]+$').hasMatch(sanitized)) {
-      return 'City name must contain only letters, spaces, or hyphens';
-    }
+    // if (!RegExp(r'^[a-zA-Z\s\-]+$').hasMatch(sanitized)) {
+    //   return 'City name must contain only letters, spaces, or hyphens';
+    // }
 
     return null;
   }

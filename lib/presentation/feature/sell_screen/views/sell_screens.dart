@@ -101,18 +101,25 @@ class _SellScreenState extends State<SellScreen> {
   }
 }
 
-class SellFormContent extends StatelessWidget {
+class SellFormContent extends StatefulWidget {
   final bool isEdit;
   final ProductsData? product;
 
   const SellFormContent({super.key, required this.isEdit, this.product});
 
   @override
+  State<SellFormContent> createState() => _SellFormContentState();
+}
+
+class _SellFormContentState extends State<SellFormContent> {
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+
+  @override
   Widget build(BuildContext context) {
     return Column(
       children: [
         CustomPrimaryAppBar(
-          title: isEdit ? 'Edit item' : 'Sell an item',
+          title: widget.isEdit ? 'Edit item' : 'Sell an item',
           showTrailing: false,
           isBackButtonVisible: true,
           onTap: () {
@@ -126,14 +133,54 @@ class SellFormContent extends StatelessWidget {
           },
         ),
         Expanded(
-          child: Container(
-            padding: EdgeInsets.symmetric(horizontal: 20.h),
-            child: SingleChildScrollView(
-              child: SellForm(isEdit: isEdit, product: product),
-            ),
+          child: Stack(
+            children: [
+              // Scrollable content
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 20.h),
+                child: SingleChildScrollView(
+                  child: SellForm(
+                    isEdit: widget.isEdit,
+                    product: widget.product,
+                    formKey: _formKey,
+                  ),
+                ),
+              ),
+              // Fixed bottom bar
+              Positioned(
+                bottom: 0,
+                left: 0,
+                right: 0,
+                child: _buildBottomBar(context),
+              ),
+            ],
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildBottomBar(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            offset: const Offset(0, -2),
+            blurRadius: 8,
+          ),
+        ],
+      ),
+      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
+      child: SafeArea(
+        top: false,
+        child: ActionButtonsRow(
+          isEdit: widget.isEdit,
+          product: widget.product,
+          onValidate: () => _formKey.currentState?.validate() ?? false,
+        ),
+      ),
     );
   }
 }
@@ -141,20 +188,24 @@ class SellFormContent extends StatelessWidget {
 class SellForm extends StatefulWidget {
   final bool isEdit;
   final ProductsData? product;
+  final GlobalKey<FormState> formKey;
 
-  const SellForm({super.key, required this.isEdit, this.product});
+  const SellForm({
+    super.key,
+    required this.isEdit,
+    this.product,
+    required this.formKey,
+  });
 
   @override
   State<SellForm> createState() => _SellFormState();
 }
 
 class _SellFormState extends State<SellForm> {
-  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-
   @override
   Widget build(BuildContext context) {
     return Form(
-      key: _formKey,
+      key: widget.formKey,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         spacing: 10.h,
@@ -164,15 +215,144 @@ class _SellFormState extends State<SellForm> {
           const ProductAttributesSection(),
           const QuantitySection(),
           const ShippingSection(),
-          30.verticalSpace,
-          ActionButtonsSection(
-            isEdit: widget.isEdit,
-            product: widget.product,
-            formKey: _formKey,
-          ),
-          10.verticalSpace,
+          // Add padding at the bottom to account for the fixed bottom bar
+          SizedBox(height: 90.h),
         ],
       ),
+    );
+  }
+}
+
+// New widget for the action buttons that can access the form key via callback
+class ActionButtonsRow extends StatelessWidget {
+  final bool isEdit;
+  final ProductsData? product;
+  final bool Function() onValidate;
+
+  const ActionButtonsRow({
+    super.key,
+    required this.isEdit,
+    this.product,
+    required this.onValidate,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<SellViewModel>(
+      builder: (context, sellVm, _) {
+        return Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.center,
+          spacing: 10.w,
+          children: [
+            if (!isEdit)
+              Expanded(
+                child: CustomAppButtons.primaryButton(
+                  text: 'Save to draft',
+                  onTap: () {
+                    if (onValidate()) {
+                      sellVm.priceFocus.unfocus();
+                      if (sellVm.selectedCategory != null &&
+                          (sellVm.selectedCategory != null ||
+                              sellVm.selectedCategory!.id != "")) {
+                        sellVm.submitProductForSale(context, isDraft: true);
+                      } else {
+                        MessageHelper.showErrorMessage(
+                          context,
+                          "Please select a Category",
+                          subTitle:
+                              "Main Category and Sub Category are mandatory",
+                        );
+                      }
+                    }
+                  },
+                  backgroundColor: AppColors.white,
+                  textColor: AppColors.black,
+                  borderRadius: 2,
+                ),
+              ),
+            Expanded(
+              child: CustomAppButtons.primaryButton(
+                text: product?.isDraft == true
+                    ? "Post"
+                    : isEdit
+                    ? 'Update'
+                    : 'Post',
+                onTap: () {
+                  sellVm.priceFocus.unfocus();
+                  if (isEdit) {
+                    sellVm
+                        .updateProduct(
+                          context: context,
+                          productId: product!.id!,
+                          isDraft: false,
+                        )
+                        .then((val) {
+                          if (val == true && context.mounted) {
+                            context.pop();
+                            context.pop();
+                            final homeViewModel = getIt.get<HomeViewModel>();
+                            homeViewModel.setIndex(0);
+                            Future.microtask(() {
+                              if (context.mounted) {
+                                showDialog(
+                                  // ignore: use_build_context_synchronously
+                                  context: Navigator.of(
+                                    context,
+                                    rootNavigator: true,
+                                  ).context,
+                                  barrierDismissible: false,
+                                  builder: (_) => Dialog(
+                                    backgroundColor: Colors.white,
+                                    insetPadding: EdgeInsets.symmetric(
+                                      horizontal: 24.w,
+                                    ),
+                                    shape: RoundedRectangleBorder(),
+                                    child: OrderActionDialogBox(
+                                      onSubmitText: "See Product",
+                                      onCancelTap: () {
+                                        Navigator.of(
+                                          context,
+                                          rootNavigator: true,
+                                        ).pop();
+                                      },
+                                      onCancelText: '',
+                                      title: "Your Listing is posted and live",
+                                      subTitle:
+                                          'you can see your product in live',
+                                      isSuccess: true,
+                                      showButtons: false,
+                                      buttonText: '',
+                                      onSubmitTap: () {},
+                                    ),
+                                  ),
+                                );
+                              }
+                            });
+                          }
+                        });
+                  } else {
+                    if (onValidate()) {
+                      if (sellVm.selectedCategory != null &&
+                          (sellVm.selectedCategory != null ||
+                              sellVm.selectedCategory!.id != "")) {
+                        sellVm.submitProductForSale(context, isDraft: false);
+                      } else {
+                        MessageHelper.showErrorMessage(
+                          context,
+                          "Please select a Category",
+                          subTitle:
+                              "Main Category and Sub Category are mandatory",
+                        );
+                      }
+                    }
+                  }
+                },
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }
@@ -955,137 +1135,6 @@ class ShippingToSelector extends StatelessWidget {
               }
             });
           },
-        );
-      },
-    );
-  }
-}
-
-class ActionButtonsSection extends StatelessWidget {
-  final bool isEdit;
-  final ProductsData? product;
-  final GlobalKey<FormState> formKey;
-
-  const ActionButtonsSection({
-    super.key,
-    required this.isEdit,
-    this.product,
-    required this.formKey,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Consumer<SellViewModel>(
-      builder: (context, sellVm, _) {
-        return Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          mainAxisAlignment: MainAxisAlignment.center,
-          spacing: 10.w,
-          children: [
-            if (!isEdit)
-              CustomAppButtons.primaryButton(
-                text: 'Save to draft',
-                onTap: () {
-                  if (formKey.currentState!.validate()) {
-                    sellVm.priceFocus.unfocus();
-                    if (sellVm.selectedCategory != null &&
-                        (sellVm.selectedCategory != null ||
-                            sellVm.selectedCategory!.id != "")) {
-                      sellVm.submitProductForSale(context, isDraft: true);
-                    } else {
-                      MessageHelper.showErrorMessage(
-                        context,
-                        "Please select a Category",
-                        subTitle:
-                            "Main Category and Sub Category are mandatory",
-                      );
-                    }
-                  }
-                },
-                backgroundColor: AppColors.white,
-                textColor: AppColors.black,
-                borderRadius: 2,
-                width: 150.w,
-              ),
-            CustomAppButtons.primaryButton(
-              width: 150.w,
-              text: product?.isDraft == true
-                  ? "Post"
-                  : isEdit
-                  ? 'Update'
-                  : 'Post',
-              onTap: () {
-                sellVm.priceFocus.unfocus();
-                if (isEdit) {
-                  sellVm
-                      .updateProduct(
-                        context: context,
-                        productId: product!.id!,
-                        isDraft: false,
-                      )
-                      .then((val) {
-                        if (val == true && context.mounted) {
-                          context.pop();
-                          context.pop();
-                          final homeViewModel = getIt.get<HomeViewModel>();
-                          homeViewModel.setIndex(0);
-                          Future.microtask(() {
-                            if (context.mounted) {
-                              showDialog(
-                                // ignore: use_build_context_synchronously
-                                context: Navigator.of(
-                                  context,
-                                  rootNavigator: true,
-                                ).context,
-                                barrierDismissible: false,
-                                builder: (_) => Dialog(
-                                  backgroundColor: Colors.white,
-                                  insetPadding: EdgeInsets.symmetric(
-                                    horizontal: 24.w,
-                                  ),
-                                  shape: RoundedRectangleBorder(),
-                                  child: OrderActionDialogBox(
-                                    onSubmitText: "See Product",
-                                    onCancelTap: () {
-                                      Navigator.of(
-                                        context,
-                                        rootNavigator: true,
-                                      ).pop();
-                                    },
-                                    onCancelText: '',
-                                    title: "Your Listing is posted and live",
-                                    subTitle:
-                                        'you can see your product in live',
-                                    isSuccess: true,
-                                    showButtons: false,
-                                    buttonText: '',
-                                    onSubmitTap: () {},
-                                  ),
-                                ),
-                              );
-                            }
-                          });
-                        }
-                      });
-                } else {
-                  if (formKey.currentState!.validate()) {
-                    if (sellVm.selectedCategory != null &&
-                        (sellVm.selectedCategory != null ||
-                            sellVm.selectedCategory!.id != "")) {
-                      sellVm.submitProductForSale(context, isDraft: false);
-                    } else {
-                      MessageHelper.showErrorMessage(
-                        context,
-                        "Please select a Category",
-                        subTitle:
-                            "Main Category and Sub Category are mandatory",
-                      );
-                    }
-                  }
-                }
-              },
-            ),
-          ],
         );
       },
     );

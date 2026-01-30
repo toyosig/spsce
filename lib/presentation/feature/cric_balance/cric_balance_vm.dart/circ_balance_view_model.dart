@@ -65,10 +65,16 @@ class CirBalanceViewModel extends ChangeNotifier {
     int page,
     int totalPages,
   ) {
+    // Filter out MARKETPLACE_FEE transactions - sellers don't pay marketplace fees
+    final filteredList = list.where((txn) {
+      final type = txn.type?.toUpperCase() ?? '';
+      return type != 'MARKETPLACE_FEE';
+    }).toList();
+    
     if (page == 1) {
-      transactions = list;
+      transactions = filteredList;
     } else {
-      transactions = list;
+      transactions = filteredList;
     }
     _currentPage = page;
     _totalPages = totalPages;
@@ -177,7 +183,6 @@ class CirBalanceViewModel extends ChangeNotifier {
                   if (context.mounted) {
                     Navigator.of(context).pop();
                     context.pop();
-                    // context.pushNamed(Routes.cricbalance.name);
                   }
                 },
               ),
@@ -229,25 +234,10 @@ class CirBalanceViewModel extends ChangeNotifier {
         throw Exception(response.message);
       }
     } catch (e) {
-      // if (context.mounted) {
-      //   MessageHelper.showErrorMessage(context, e.toString());
-      // }
       log("error filterTransactionsByDays: $e");
     } finally {
       setLoading(false);
       if (context.mounted) LoadingHelper.hideLoading(context);
     }
   }
-
-  // @override
-  // void dispose() {
-  //   super.dispose();
-  //   _selectedFilter = EarningsFilterType.lifeTime;
-  //   transactions = [];
-  //   _currentPage = 1;
-  //   _totalPages = 1;
-  //   _isLoading = false;
-  //   balanceData = null;
-  //   debugPrint('CirBalanceViewModel disposed - filter reset to lifetime');
-  // }
 }
