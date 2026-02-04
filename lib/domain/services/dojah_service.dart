@@ -9,12 +9,11 @@ class DojahService {
   static const String productionPublicKey = "prod_pk_NGUZCdBDEY9EwdWkjlSQ1AOUg";
   static const String productionPrivateKey =
       "prod_sk_TmD5rIyHqIyqojxJBtzHOp23I";
-
   static const String baseUrl = "https://api.dojah.io";
+
   AccountVerification? accountVerification;
   BVNVerificationResult? bvnVerification;
   NINVerificationResult? ninVerification;
-
   List<BankModel> availableBanks = [];
   BankModel? selectedBank;
 
@@ -33,6 +32,17 @@ class DojahService {
           (body['entity'] ?? body['data'] ?? []) as List<dynamic>;
       availableBanks = items
           .map((e) => BankModel.fromJson(e as Map<String, dynamic>))
+          .map((bank) {
+            // Replace Paycom with Opay
+            if (bank.name?.toLowerCase() == 'paycom' || 
+                bank.name?.toLowerCase().contains('paycom') == true) {
+              return BankModel(
+                name: 'Opay',
+                code: bank.code,
+              );
+            }
+            return bank;
+          })
           .toList();
     }
   }
@@ -97,8 +107,15 @@ class DojahService {
   }
 
   String getBankCode({required String bankName}) {
+    // Handle both Opay and Paycom for backward compatibility
+    final searchName = bankName.toLowerCase();
     final bank = availableBanks.firstWhere(
-      (element) => element.name?.toLowerCase() == bankName.toLowerCase(),
+      (element) {
+        final name = element.name?.toLowerCase() ?? '';
+        return name == searchName || 
+               (searchName == 'opay' && name == 'paycom') ||
+               (searchName == 'paycom' && name == 'opay');
+      },
     );
     return bank.code ?? "0";
   }

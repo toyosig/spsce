@@ -435,9 +435,11 @@ class _PaymentVerificationScreenState extends State<PaymentVerificationScreen> {
                           final query = q.trim().toLowerCase();
                           filtered = service.availableBanks
                               .where(
-                                (b) => (b.name ?? '').toLowerCase().contains(
-                                  query,
-                                ),
+                                (b) {
+                                  // Transform Paycom to Opay for display and search
+                                  final displayName = _getDisplayBankName(b.name ?? '');
+                                  return displayName.toLowerCase().contains(query);
+                                },
                               )
                               .toList();
                           setModalState(() {});
@@ -517,10 +519,10 @@ class _PaymentVerificationScreenState extends State<PaymentVerificationScreen> {
                                   ),
                                   itemBuilder: (ctx, i) {
                                     final b = filtered[i];
+                                    final displayName = _getDisplayBankName(b.name ?? '');
                                     return InkWell(
                                       onTap: () {
-                                        sellVm.bankNameController.text =
-                                            b.name ?? '';
+                                        sellVm.bankNameController.text = displayName;
                                         service.selectedBank = b;
                                         sellVm.invalidateAccountVerification();
                                         if (_verified) {
@@ -537,7 +539,7 @@ class _PaymentVerificationScreenState extends State<PaymentVerificationScreen> {
                                           horizontal: 4.w,
                                         ),
                                         child: Text(
-                                          b.name ?? '',
+                                          displayName,
                                           style: AppTextStyles.neueMontreal(
                                             fontSize: 14.sp,
                                             fontWeight: FontWeight.w500,
@@ -589,6 +591,15 @@ class _PaymentVerificationScreenState extends State<PaymentVerificationScreen> {
         ),
       ],
     );
+  }
+
+  // Add this helper method to transform bank names for display
+  String _getDisplayBankName(String bankName) {
+    if (bankName.toLowerCase() == 'paycom' || 
+        bankName.toLowerCase().contains('paycom')) {
+      return 'Opay';
+    }
+    return bankName;
   }
 
   bool _namesMatch(String provided, String fetched) {
